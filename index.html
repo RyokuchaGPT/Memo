@@ -2,7 +2,18 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- iOS PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Memo++">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/564/564445.png">
+    
+    <!-- General PWA -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#ffffff">
+
     <title>Memo++ Ultimate | Pro Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,6 +50,8 @@
             font-family: var(--font-main);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
+            height: 100dvh;
+            display: flex;
         }
 
         .memo-card {
@@ -71,7 +84,7 @@
             max-width: 95vw;
         }
 
-        #game-canvas { background: #000; cursor: none; border-radius: 8px; width: 100%; height: auto; aspect-ratio: 4/3; max-height: 85vh; }
+        #game-canvas { background: #000; cursor: none; border-radius: 8px; width: 100%; height: auto; aspect-ratio: 4/3; max-height: 80vh; }
         
         .line-clamp-3 {
             display: -webkit-box;
@@ -80,22 +93,11 @@
             overflow: hidden;
         }
 
-        .code-mode-textarea {
-            font-family: var(--font-mono);
-            background-color: #1e1e1e !important;
-            color: #d4d4d4 !important;
-            padding: 15px !important;
-            border-radius: 8px !important;
-            tab-size: 4;
-            line-height: 1.5;
-            font-size: 14px;
-        }
-
         .sidebar-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 16px;
+            padding: 12px 16px;
             margin: 4px 8px;
             border-radius: 8px;
             cursor: pointer;
@@ -112,6 +114,8 @@
             border-right: 1px solid var(--border);
             transition: transform 0.3s ease;
             z-index: 50;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         @media (max-width: 768px) {
@@ -134,35 +138,6 @@
             #header-search { display: none; }
         }
 
-        .attachment-chip {
-            background: rgba(0,0,0,0.05);
-            border: 1px solid rgba(0,0,0,0.1);
-            padding: 4px;
-            border-radius: 8px;
-            font-size: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 70px;
-            position: relative;
-        }
-
-        .attachment-preview {
-            width: 60px;
-            height: 45px;
-            object-fit: cover;
-            border-radius: 4px;
-            background: #eee;
-        }
-
-        .card-thumbnail {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-            border-bottom: 1px solid var(--border);
-        }
-
-        /* Responsive Modal adjustments */
         @media (max-width: 640px) {
             .modal-surface {
                 width: 100%;
@@ -171,50 +146,45 @@
                 max-height: none;
                 border-radius: 0;
                 padding: 1rem !important;
+                padding-top: env(safe-area-inset-top) !important;
+                padding-bottom: env(safe-area-inset-bottom) !important;
             }
         }
     </style>
 <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/"
+    "react": "https://esm.sh/react@^19.2.3"
   }
 }
 </script>
 </head>
-<body class="h-screen flex" data-style="GOOGLE">
-    <!-- Sidebar for Folders -->
+<body data-style="GOOGLE">
+    <!-- Sidebar -->
     <aside id="sidebar" class="flex flex-col shrink-0">
         <div class="p-6 flex flex-col shrink-0">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-extrabold tracking-tighter">Folders</h2>
-                <button id="btn-add-folder" class="p-2 rounded-lg bg-black/5 hover:bg-black/10 transition-colors border border-black/10">
+                <h2 class="text-xl font-extrabold tracking-tighter" id="txt-sidebarFolders">Folders</h2>
+                <button id="btn-add-folder" class="p-2 rounded-lg bg-black/5 hover:bg-black/10 border border-black/10">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 </button>
             </div>
-            <!-- New Folder Input (Replaces Prompt) -->
-            <div id="folder-input-container" class="hidden flex flex-col space-y-2 mb-2">
-                <input type="text" id="new-folder-name" class="w-full px-3 py-2 text-sm border border-black/10 rounded-lg bg-white outline-none focus:ring-1 focus:ring-blue-500" placeholder="New folder name...">
+            <!-- Folder Input -->
+            <div id="folder-input-container" class="hidden flex flex-col space-y-2 mb-4 p-3 bg-black/5 rounded-xl">
+                <input type="text" id="new-folder-name" class="w-full px-3 py-2 text-sm border-none rounded-lg bg-white shadow-sm outline-none" placeholder="Folder name...">
                 <div class="flex gap-2">
-                    <button id="btn-confirm-folder" class="flex-1 text-xs font-bold py-1.5 bg-blue-600 text-white rounded-md">Add</button>
-                    <button id="btn-cancel-folder" class="flex-1 text-xs font-bold py-1.5 bg-gray-100 rounded-md">Cancel</button>
+                    <button id="btn-confirm-folder" class="flex-1 text-xs font-bold py-2 bg-blue-600 text-white rounded-lg" id="txt-folderAdd">Add</button>
+                    <button id="btn-cancel-folder" class="flex-1 text-xs font-bold py-2 bg-gray-200 text-gray-700 rounded-lg" id="txt-folderCancel">Cancel</button>
                 </div>
             </div>
         </div>
-        <div id="folder-list" class="flex-1 overflow-y-auto">
-            <!-- Folders injected here -->
-        </div>
-        <div class="p-4 border-t border-black/5 text-[10px] opacity-30 text-center">
-            PRO EDITION v3.2
-        </div>
+        <div id="folder-list" class="flex-1 overflow-y-auto"></div>
+        <div class="p-4 border-t border-black/5 text-[10px] opacity-30 text-center">PRO EDITION v3.5</div>
     </aside>
     <div class="sidebar-overlay" onclick="window.app.toggleSidebar(false)"></div>
 
-    <div id="app" class="flex-1 flex flex-col h-full overflow-hidden">
-        <!-- Header -->
-        <header class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-black/5 shrink-0 bg-white/50 backdrop-blur-md">
+    <div id="app-root" class="flex-1 flex flex-col h-full overflow-hidden">
+        <header class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-black/5 shrink-0 bg-white/50 backdrop-blur-md pt-[max(1rem,env(safe-area-inset-top))]">
             <div class="flex items-center space-x-2 sm:space-x-4">
                 <button id="btn-menu" class="md:hidden p-2 rounded-lg hover:bg-black/5">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -229,7 +199,7 @@
             
             <div id="header-search" class="flex items-center space-x-4 flex-1 max-w-xl mx-4 lg:mx-8">
                 <div class="relative w-full">
-                    <input type="text" id="search-input" placeholder="Search..." class="w-full pl-4 pr-4 py-2 rounded-full border border-black/10 bg-black/5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                    <input type="text" id="search-input" placeholder="Search..." class="w-full pl-4 pr-4 py-2 rounded-full border border-black/10 bg-black/5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
                 </div>
             </div>
 
@@ -238,725 +208,66 @@
                     <svg class="w-4 h-4 sm:w-5 sm:h-5 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     <span id="txt-newMemo" class="hidden sm:inline">New</span>
                 </button>
-                <button id="btn-settings" class="p-2 rounded-lg hover:bg-black/5 border border-black/10 transition-colors">
-                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <button id="btn-settings" class="p-2 rounded-lg hover:bg-black/5 border border-black/10">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
                 </button>
             </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-hide">
-            <div id="memo-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                <!-- Memos injected here -->
-            </div>
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-hide pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <div id="memo-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"></div>
         </main>
     </div>
 
-    <!-- Settings Modal -->
+    <!-- Modals -->
     <div id="modal-settings" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm modal-close"></div>
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="window.app.toggleModal('modal-settings', false)"></div>
         <div class="relative w-full max-w-lg modal-surface p-6 sm:p-8 overflow-y-auto max-h-[90vh]">
-            <h2 class="text-2xl sm:text-3xl font-extrabold mb-6" id="txt-settings">Settings</h2>
+            <h2 class="text-2xl font-extrabold mb-6" id="txt-settingsHeader">Settings</h2>
+            
             <div class="space-y-6">
                 <div>
                     <label class="block text-xs font-bold uppercase opacity-50 mb-3" id="txt-themeLabel">Visual Style</label>
-                    <div id="style-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-                        <!-- Style buttons injected here -->
-                    </div>
+                    <div id="style-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
                 </div>
+                
                 <div>
                     <label class="block text-xs font-bold uppercase opacity-50 mb-3" id="txt-languageLabel">Language</label>
-                    <div id="lang-list" class="flex flex-wrap gap-2">
-                        <!-- Lang buttons injected here -->
-                    </div>
+                    <div id="lang-list" class="flex flex-wrap gap-2"></div>
                 </div>
             </div>
-            <div class="mt-8 flex justify-end">
-                <button class="modal-close btn-primary w-full sm:w-auto">Done</button>
-            </div>
+
+            <button class="btn-primary w-full mt-8" onclick="window.app.toggleModal('modal-settings', false)" id="txt-settingsDone">Done</button>
         </div>
     </div>
 
-    <!-- Editor Modal -->
     <div id="modal-editor" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-0 sm:p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-md modal-close hidden sm:block"></div>
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-md hidden sm:block" onclick="window.app.toggleModal('modal-editor', false)"></div>
         <div class="relative w-full max-w-5xl h-full sm:h-[90vh] flex flex-col p-6 sm:p-10 modal-surface">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
-                <div class="flex items-center space-x-3 flex-1">
-                    <input type="text" id="edit-title" class="text-2xl sm:text-4xl font-black bg-transparent border-none focus:outline-none w-full" placeholder="Title...">
-                    <div class="h-6 sm:h-8 w-px bg-black/10"></div>
-                    <button id="btn-toggle-code" class="whitespace-nowrap px-3 py-1 text-[9px] sm:text-[10px] font-black uppercase tracking-widest border border-black/10 rounded-full hover:bg-black/5 transition-colors">
-                        Code: OFF
-                    </button>
-                </div>
-                
-                <div class="flex items-center justify-between sm:justify-end gap-2">
-                    <div id="code-controls" class="hidden items-center space-x-2">
-                        <div class="flex items-center bg-black/5 rounded-lg px-2 py-1 border border-black/10">
-                            <span class="text-[9px] font-bold opacity-40 uppercase mr-1">Ext:</span>
-                            <input type="text" id="edit-extension" class="w-10 bg-transparent text-xs font-mono focus:outline-none" placeholder=".js">
-                        </div>
-                        <button id="btn-download" class="p-2 hover:bg-black/5 rounded-lg border border-black/10 transition-colors" title="Download">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        </button>
-                    </div>
-
-                    <div class="flex items-center space-x-2">
-                        <select id="edit-folder-select" class="bg-black/5 border border-black/10 rounded-lg px-2 py-1 text-xs font-bold outline-none">
-                            <option value="none">No Folder</option>
-                        </select>
-                        <label for="file-upload" class="cursor-pointer p-2 hover:bg-black/5 rounded-lg border border-black/10 transition-colors">
-                            <svg class="w-5 h-5 sm:w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
-                            <input type="file" id="file-upload" class="hidden" multiple>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div id="attachments-container" class="flex flex-wrap gap-2 mb-4 empty:hidden overflow-x-auto pb-2 shrink-0">
-                <!-- Files injected here -->
-            </div>
-
-            <div class="flex-1 relative overflow-hidden flex flex-col">
-                <textarea id="edit-content" class="flex-1 bg-transparent border-none focus:outline-none resize-none text-lg sm:text-xl leading-relaxed opacity-80" placeholder="Start writing..."></textarea>
-            </div>
-
-            <div class="mt-4 pt-4 sm:mt-6 sm:pt-6 border-t border-black/5 flex flex-col sm:flex-row gap-4 sm:items-center">
-                <div class="flex items-center flex-1">
-                    <span class="text-xs font-bold opacity-30 uppercase mr-2 shrink-0" id="txt-tagsLabel">Tags</span>
-                    <input type="text" id="edit-tags" placeholder="#work, #idea..." class="bg-transparent border-none focus:outline-none flex-1 italic text-sm opacity-50">
-                </div>
-                <div class="flex space-x-2 sm:space-x-3">
-                    <button class="modal-close flex-1 sm:flex-none px-6 py-2 rounded-full border border-black/10 hover:bg-black/5 transition-colors text-sm font-bold">Cancel</button>
-                    <button id="btn-save" class="btn-primary flex-1 sm:flex-none px-8 sm:px-10 py-2 text-sm font-bold">Save</button>
-                </div>
+            <input type="text" id="edit-title" class="text-2xl sm:text-4xl font-black bg-transparent border-none focus:outline-none w-full mb-4" placeholder="Title...">
+            <textarea id="edit-content" class="flex-1 bg-transparent border-none focus:outline-none resize-none text-lg leading-relaxed opacity-80" placeholder="Start writing..."></textarea>
+            
+            <div class="mt-4 flex items-center gap-2 border-t border-black/5 pt-4">
+                <select id="edit-folder-select" class="bg-black/5 border border-black/10 rounded-lg px-2 py-1 text-xs font-bold outline-none"></select>
+                <div class="flex-1"></div>
+                <button class="px-6 py-2 rounded-full border border-black/10 text-sm font-bold" onclick="window.app.toggleModal('modal-editor', false)" id="txt-editorCancel">Cancel</button>
+                <button id="btn-save" class="btn-primary px-8 py-2 text-sm font-bold" id="txt-editorSave">Save</button>
             </div>
         </div>
     </div>
 
-    <!-- Confirm Delete Modal -->
-    <div id="modal-confirm" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm modal-close"></div>
-        <div class="relative w-full max-sm modal-surface p-8 text-center">
-            <h3 class="text-xl font-bold mb-4">Are you sure?</h3>
-            <p class="opacity-70 mb-8">This memo will be permanently deleted.</p>
-            <div class="flex space-x-4 justify-center">
-                <button class="modal-close px-6 py-2 rounded-lg border border-black/10 font-bold">Cancel</button>
-                <button id="btn-confirm-delete" class="px-6 py-2 bg-red-600 text-white rounded-lg font-bold">Delete</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Game Overlay -->
     <div id="game-overlay" class="fixed inset-0 z-[200] hidden flex flex-col items-center justify-center bg-black">
         <div class="relative w-full h-full flex flex-col items-center justify-center p-4">
-            <div class="relative w-full max-w-2xl pb-10">
+            <div class="relative w-full max-w-2xl">
                 <canvas id="game-canvas" width="800" height="600"></canvas>
-                <div id="game-ui" class="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none">
-                    <div class="text-white font-mono text-xl sm:text-2xl drop-shadow-lg" style="text-shadow: 0 0 10px #00f2ff;">SCORE: <span id="game-score">0</span></div>
-                    <button id="game-close-icon" class="pointer-events-auto bg-white/10 hover:bg-white/30 p-2 rounded-full text-white transition-colors">
-                        <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                </div>
+                <div class="absolute top-4 left-4 text-white font-mono text-xl">SCORE: <span id="game-score">0</span></div>
+                <button id="game-close-icon" class="absolute top-4 right-4 text-white p-2">✕</button>
             </div>
-            
-            <div id="game-intro" class="absolute inset-0 flex flex-col items-center justify-center bg-black/95 text-white p-8 text-center z-10">
-                <h2 class="text-4xl sm:text-6xl font-black mb-4 tracking-tighter" style="color: #00f2ff; text-shadow: 0 0 20px #00f2ff;">MEMO BREAKER</h2>
-                <p class="text-sm sm:text-lg opacity-80 mb-12 max-w-md">Shatter your notes! Power-ups: W (Wide Paddle), $ (Score Bonus). Move mouse/touch to play.</p>
-                <button id="btn-start-game" class="px-10 py-4 sm:px-16 sm:py-5 bg-cyan-500 text-black font-black text-xl sm:text-2xl rounded-full hover:scale-110 active:scale-95 transition-all shadow-[0_0_30px_#06b6d4]">START MISSION</button>
-            </div>
-
-            <div id="game-result" class="absolute inset-0 hidden flex flex-col items-center justify-center bg-black/98 text-white p-8 text-center z-20">
-                <h2 id="result-title" class="text-4xl sm:text-6xl font-black mb-4" style="color: #00f2ff;">GAME OVER</h2>
-                <p class="text-xl sm:text-3xl font-bold mb-12 uppercase tracking-widest">Final Score: <span id="final-score" class="text-yellow-400">0</span></p>
-                <div class="flex flex-col sm:flex-row gap-4 sm:space-x-6">
-                    <button id="btn-game-continue" class="px-10 py-4 sm:px-12 sm:py-4 bg-cyan-500 text-black font-black text-lg sm:text-xl rounded-full hover:scale-110 transition-all shadow-[0_0_20px_#06b6d4]">CONTINUE</button>
-                    <button id="btn-game-exit" class="px-10 py-4 sm:px-12 sm:py-4 bg-white/10 text-white font-bold text-lg sm:text-xl rounded-full hover:bg-white/20 transition-all border border-white/20">EXIT</button>
-                </div>
+            <div id="game-intro" class="absolute inset-0 flex flex-col items-center justify-center bg-black/95 text-white p-8">
+                <h2 class="text-5xl font-black mb-12">MEMO BREAKER</h2>
+                <button id="btn-start-game" class="btn-primary text-xl px-12 py-4">START</button>
             </div>
         </div>
     </div>
-
-    <script>
-        window.app = null;
-
-        const STORAGE_KEY = 'memo_plus_ultimate_v3_folders';
-        const TRANSLATIONS = {
-            JA: { appTitle: 'Memo++', newMemo: '新規作成', settings: '設定', search: '検索...', save: '保存', cancel: '戻る', delete: '削除', themeLabel: 'デザイン', languageLabel: '言語', close: '閉じる', noMemos: 'メモはありません', tagsLabel: 'タグ', titlePlaceholder: 'タイトル...', contentPlaceholder: '内容...' },
-            EN: { appTitle: 'Memo++', newMemo: 'New Memo', settings: 'Settings', search: 'Search...', save: 'Save', cancel: 'Cancel', delete: 'Delete', themeLabel: 'Style', languageLabel: 'Language', close: 'Close', noMemos: 'No memos found', tagsLabel: 'Tags', titlePlaceholder: 'Title...', contentPlaceholder: 'Content...' },
-            ZH: { appTitle: 'Memo++', newMemo: '新备忘录', settings: '设置', search: '搜索...', save: '保存', cancel: '取消', delete: '删除', themeLabel: '风格', languageLabel: '语言', close: '关闭', noMemos: '未发现备忘录', tagsLabel: '标签', titlePlaceholder: '标题...', contentPlaceholder: '内容...' },
-            KO: { appTitle: 'Memo++', newMemo: '새 메모', settings: '설정', search: '검색...', save: '저장', cancel: '취소', delete: '삭제', themeLabel: '스타イル', languageLabel: '언어', close: '닫기', noMemos: '메모를 찾을 수 없습니다', tagsLabel: '태그', titlePlaceholder: '제목...', contentPlaceholder: '내용...' },
-            FR: { appTitle: 'Memo++', newMemo: 'Nouv. Note', settings: 'Paramètres', search: 'Rechercher...', save: 'Sauver', cancel: 'Annuler', delete: 'Supprimer', themeLabel: 'Style', languageLabel: 'Langue', close: 'Fermer', noMemos: 'Aucune note', tagsLabel: 'Tags', titlePlaceholder: 'Titre...', contentPlaceholder: 'Contenu...' }
-        };
-
-        const STYLES = ['GOOGLE', 'MICROSOFT', 'MAC', 'WIN11', 'FUTURE', 'NEON', '2000S', '2010S', '2020S'];
-        const LANGS = ['JA', 'EN', 'ZH', 'KO', 'FR'];
-
-        class MemoApp {
-            constructor() {
-                window.app = this;
-                this.state = this.load();
-                this.currentEditingId = null;
-                this.pendingDeleteId = null;
-                this.attachments = [];
-                this.isCodeMode = false;
-                this.activeFolderId = 'all';
-                this.init();
-            }
-
-            load() {
-                try {
-                    const data = localStorage.getItem(STORAGE_KEY);
-                    const defaultState = { memos: [], folders: [], style: 'GOOGLE', lang: 'JA' };
-                    if (!data) return defaultState;
-                    const parsed = JSON.parse(data);
-                    return {
-                        memos: Array.isArray(parsed.memos) ? parsed.memos : [],
-                        folders: Array.isArray(parsed.folders) ? parsed.folders : [],
-                        style: parsed.style || 'GOOGLE',
-                        lang: parsed.lang || 'JA'
-                    };
-                } catch(e) { return { memos: [], folders: [], style: 'GOOGLE', lang: 'JA' }; }
-            }
-
-            save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); }
-
-            init() {
-                this.bindEvents();
-                this.applyStyle(this.state.style);
-                this.applyLang(this.state.lang);
-                this.renderAll();
-            }
-
-            toggleSidebar(show) {
-                const sidebar = document.getElementById('sidebar');
-                if (!sidebar) return;
-                if (show === undefined) sidebar.classList.toggle('open');
-                else if (show) sidebar.classList.add('open');
-                else sidebar.classList.remove('open');
-            }
-
-            bindEvents() {
-                const safeOnclick = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
-                
-                safeOnclick('btn-menu', () => this.toggleSidebar(true));
-                safeOnclick('btn-new', () => this.openEditor());
-                safeOnclick('btn-settings', () => this.toggleModal('modal-settings', true));
-                safeOnclick('btn-save', () => this.saveMemo());
-                safeOnclick('btn-play', () => this.openGame());
-                safeOnclick('game-close-icon', () => this.closeGame());
-                safeOnclick('btn-start-game', () => this.startGame());
-                safeOnclick('btn-confirm-delete', () => this.confirmDelete());
-                safeOnclick('btn-game-continue', () => this.startGame());
-                safeOnclick('btn-game-exit', () => this.closeGame());
-                safeOnclick('btn-download', () => this.downloadMemo());
-                
-                // Folder Addition UI Events
-                safeOnclick('btn-add-folder', () => {
-                    const container = document.getElementById('folder-input-container');
-                    container.classList.toggle('hidden');
-                    if (!container.classList.contains('hidden')) {
-                        document.getElementById('new-folder-name').focus();
-                    }
-                });
-                safeOnclick('btn-cancel-folder', () => {
-                    document.getElementById('folder-input-container').classList.add('hidden');
-                    document.getElementById('new-folder-name').value = '';
-                });
-                safeOnclick('btn-confirm-folder', () => this.addNewFolder());
-                
-                const folderInput = document.getElementById('new-folder-name');
-                if (folderInput) {
-                    folderInput.onkeydown = (e) => {
-                        if (e.key === 'Enter') this.addNewFolder();
-                        if (e.key === 'Escape') {
-                            document.getElementById('folder-input-container').classList.add('hidden');
-                            folderInput.value = '';
-                        }
-                    };
-                }
-
-                safeOnclick('btn-toggle-code', () => this.toggleCodeMode());
-
-                const fileUpload = document.getElementById('file-upload');
-                if (fileUpload) fileUpload.onchange = (e) => this.handleFileUpload(e);
-
-                document.querySelectorAll('.modal-close').forEach(el => {
-                    el.onclick = () => this.toggleModal(el.closest('[id^="modal-"]').id, false);
-                });
-
-                const searchInput = document.getElementById('search-input');
-                if (searchInput) searchInput.oninput = (e) => this.renderMemos(e.target.value);
-
-                const memoGrid = document.getElementById('memo-grid');
-                if (memoGrid) {
-                    memoGrid.onclick = (e) => {
-                        const card = e.target.closest('.memo-card');
-                        const del = e.target.closest('.delete-memo');
-                        if (del) { e.stopPropagation(); this.requestDelete(del.dataset.id); return; }
-                        if (card) this.openEditor(card.dataset.id);
-                    };
-                }
-
-                const editContent = document.getElementById('edit-content');
-                if (editContent) {
-                    editContent.onkeydown = (e) => {
-                        if (this.isCodeMode && e.key === 'Tab') {
-                            e.preventDefault();
-                            const start = e.target.selectionStart;
-                            const end = e.target.selectionEnd;
-                            const val = e.target.value;
-                            e.target.value = val.substring(0, start) + "\t" + val.substring(end);
-                            e.target.selectionStart = e.target.selectionEnd = start + 1;
-                        }
-                    };
-                }
-            }
-
-            addNewFolder() {
-                const input = document.getElementById('new-folder-name');
-                const name = input.value.trim();
-                if (name) {
-                    const id = 'f_' + Date.now();
-                    this.state.folders.push({ id, name });
-                    this.save();
-                    this.renderFolders();
-                    input.value = '';
-                    document.getElementById('folder-input-container').classList.add('hidden');
-                }
-            }
-
-            deleteFolder(id, e) {
-                if (e) e.stopPropagation();
-                if (confirm('Delete this folder? (Memos will remain)')) {
-                    this.state.folders = this.state.folders.filter(f => f.id !== id);
-                    this.state.memos.forEach(m => { if(m.folderId === id) m.folderId = null; });
-                    if (this.activeFolderId === id) this.activeFolderId = 'all';
-                    this.save();
-                    this.renderFolders();
-                    this.renderMemos();
-                }
-            }
-
-            toggleCodeMode(forced = null) {
-                this.isCodeMode = forced !== null ? forced : !this.isCodeMode;
-                const btn = document.getElementById('btn-toggle-code');
-                const textarea = document.getElementById('edit-content');
-                const controls = document.getElementById('code-controls');
-                
-                if (this.isCodeMode) {
-                    btn.textContent = "Code: ON";
-                    btn.classList.add('bg-blue-500', 'text-white');
-                    textarea.classList.add('code-mode-textarea');
-                    controls.classList.remove('hidden');
-                    controls.classList.add('flex');
-                } else {
-                    btn.textContent = "Code: OFF";
-                    btn.classList.remove('bg-blue-500', 'text-white');
-                    textarea.classList.remove('code-mode-textarea');
-                    controls.classList.add('hidden');
-                    controls.classList.remove('flex');
-                }
-            }
-
-            async handleFileUpload(e) {
-                const files = Array.from(e.target.files);
-                for (const file of files) {
-                    if (file.size > 2 * 1024 * 1024) continue;
-                    const data = await this.fileToBase64(file);
-                    this.attachments.push({ name: file.name, type: file.type, data: data });
-                }
-                this.renderAttachments();
-            }
-
-            fileToBase64(file) {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
-            }
-
-            renderAttachments() {
-                const container = document.getElementById('attachments-container');
-                if (!container) return;
-                container.innerHTML = this.attachments.map((file, idx) => {
-                    const isImg = file.type.startsWith('image/');
-                    return `
-                        <div class="attachment-chip">
-                            ${isImg ? `<img src="${file.data}" class="attachment-preview" alt="${file.name}">` : `
-                                <div class="attachment-preview flex items-center justify-center bg-gray-200">
-                                    <svg class="w-4 h-4 opacity-20" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                                </div>
-                            `}
-                            <span class="truncate w-full text-center px-1">${file.name}</span>
-                            <button onclick="window.app.removeAttachment(${idx})" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] font-bold">×</button>
-                        </div>
-                    `;
-                }).join('');
-            }
-
-            removeAttachment(idx) {
-                this.attachments.splice(idx, 1);
-                this.renderAttachments();
-            }
-
-            downloadMemo() {
-                const content = document.getElementById('edit-content').value;
-                const title = document.getElementById('edit-title').value || 'memo';
-                const ext = document.getElementById('edit-extension').value || '.txt';
-                const blob = new Blob([content], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = title + (ext.startsWith('.') ? ext : '.' + ext);
-                a.click();
-            }
-
-            renderAll() {
-                this.renderFolders();
-                this.renderMemos();
-                this.renderStyleList();
-                this.renderLangList();
-            }
-
-            renderFolders() {
-                const list = document.getElementById('folder-list');
-                const select = document.getElementById('edit-folder-select');
-                if (!list) return;
-
-                const folders = [{ id: 'all', name: 'All Memos' }, { id: 'none', name: 'No Folder' }, ...this.state.folders];
-                
-                list.innerHTML = folders.filter(f => f.id !== 'none').map(f => `
-                    <div class="sidebar-item group ${this.activeFolderId === f.id ? 'active' : ''}" onclick="window.app.setActiveFolder('${f.id}')">
-                        <span class="truncate flex-1">${f.name}</span>
-                        ${f.id !== 'all' ? `
-                            <button onclick="window.app.deleteFolder('${f.id}', event)" class="p-1 opacity-0 group-hover:opacity-100 hover:text-red-300 transition-opacity">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        ` : ''}
-                    </div>
-                `).join('');
-
-                if (select) {
-                    select.innerHTML = [{ id: 'none', name: 'No Folder' }, ...this.state.folders].map(f => `
-                        <option value="${f.id}">${f.name}</option>
-                    `).join('');
-                }
-            }
-
-            setActiveFolder(id) {
-                this.activeFolderId = id;
-                this.renderFolders();
-                this.renderMemos();
-                if (window.innerWidth <= 768) this.toggleSidebar(false);
-            }
-
-            renderMemos(q = '') {
-                const grid = document.getElementById('memo-grid');
-                if (!grid) return;
-                const lowQ = q.toLowerCase();
-                
-                let filtered = this.state.memos;
-                
-                // Folder Filter
-                if (this.activeFolderId !== 'all') {
-                    if (this.activeFolderId === 'none') {
-                        filtered = filtered.filter(m => !m.folderId || m.folderId === 'none');
-                    } else {
-                        filtered = filtered.filter(m => m.folderId === this.activeFolderId);
-                    }
-                }
-
-                // Search Filter
-                filtered = filtered.filter(m => 
-                    m.title.toLowerCase().includes(lowQ) || 
-                    m.content.toLowerCase().includes(lowQ) ||
-                    (m.tags && m.tags.some(t => t.toLowerCase().includes(lowQ)))
-                ).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-
-                if (!filtered.length) {
-                    grid.innerHTML = `<div class="col-span-full py-20 text-center opacity-30 italic">${TRANSLATIONS[this.state.lang].noMemos}</div>`;
-                    return;
-                }
-
-                grid.innerHTML = filtered.map(m => {
-                    const firstImage = m.attachments?.find(a => a.type.startsWith('image/'))?.data;
-                    return `
-                        <div class="memo-card group flex flex-col relative" data-id="${m.id}">
-                            ${firstImage ? `<img src="${firstImage}" class="card-thumbnail" alt="thumbnail">` : ''}
-                            <div class="p-4 sm:p-6 flex flex-col flex-1">
-                                <div class="flex justify-between items-start mb-2 sm:mb-3">
-                                    <div class="flex-1 min-w-0 pr-4">
-                                        <h3 class="font-extrabold text-lg sm:text-xl truncate">${m.title || 'Untitled'}</h3>
-                                        ${m.isCode ? `<span class="text-[8px] font-black tracking-widest text-blue-500 uppercase mt-1">Code ${m.extension || ''}</span>` : ''}
-                                    </div>
-                                    <button data-id="${m.id}" class="delete-memo p-2 hover:bg-red-500 hover:text-white rounded-lg transition-all">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </button>
-                                </div>
-                                <p class="text-xs sm:text-sm opacity-60 line-clamp-3 mb-3 sm:mb-4 flex-1 leading-relaxed ${m.isCode ? 'font-mono bg-black/5 p-2 rounded text-[10px]' : ''}">${m.content || '...'}</p>
-                                <div class="flex items-center space-x-2 text-[10px] opacity-40 mb-2 sm:mb-3">
-                                    ${m.attachments?.length ? `<span class="flex items-center"><svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11H9v-2h2v2zm0-4H9V5h2v4z"></path></svg>${m.attachments.length} files</span>` : ''}
-                                </div>
-                                <div class="flex flex-wrap gap-1 sm:gap-2 mt-auto">
-                                    ${(m.tags || []).map(t => `<span class="text-[8px] sm:text-[9px] uppercase font-black px-2 py-1 bg-black/5 rounded">#${t}</span>`).join('')}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-
-            renderStyleList() {
-                const list = document.getElementById('style-grid');
-                if (list) list.innerHTML = STYLES.map(s => `
-                    <button onclick="window.app.applyStyle('${s}')" class="p-2 sm:p-3 text-[9px] sm:text-[10px] font-bold rounded-lg border-2 transition-all ${this.state.style === s ? 'active-selection bg-blue-500/10 border-blue-500 text-blue-600' : 'border-black/5 hover:bg-black/5'}">
-                        ${s}
-                    </button>
-                `).join('');
-            }
-
-            renderLangList() {
-                const list = document.getElementById('lang-list');
-                if (list) list.innerHTML = LANGS.map(l => `
-                    <button onclick="window.app.applyLang('${l}')" class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-full border-2 transition-all ${this.state.lang === l ? 'active-selection bg-blue-500/10 border-blue-500 text-blue-600' : 'border-black/5 hover:bg-black/5'}">
-                        ${l}
-                    </button>
-                `).join('');
-            }
-
-            applyStyle(s) {
-                this.state.style = s;
-                document.body.dataset.style = s;
-                this.save();
-                this.renderStyleList();
-            }
-
-            applyLang(l) {
-                if (!TRANSLATIONS[l]) return;
-                this.state.lang = l;
-                const t = TRANSLATIONS[l];
-                const setTxt = (id, k) => { if(document.getElementById(id)) document.getElementById(id).textContent = t[k]; };
-                const setPlh = (id, k) => { if(document.getElementById(id)) document.getElementById(id).placeholder = t[k]; };
-                
-                setTxt('txt-appTitle', 'appTitle'); setTxt('txt-newMemo', 'newMemo');
-                setTxt('txt-settings', 'settings'); setTxt('txt-themeLabel', 'themeLabel');
-                setTxt('txt-languageLabel', 'languageLabel'); setTxt('txt-tagsLabel', 'tagsLabel');
-                setPlh('search-input', 'search'); setPlh('edit-title', 'titlePlaceholder');
-                setPlh('edit-content', 'contentPlaceholder');
-                
-                this.save();
-                this.renderLangList();
-                this.renderMemos();
-            }
-
-            toggleModal(id, show) {
-                const m = document.getElementById(id);
-                if (m) {
-                    m.classList.toggle('hidden', !show);
-                    if (show) m.classList.add('flex'); else m.classList.remove('flex');
-                }
-            }
-
-            openEditor(id = null) {
-                const m = id ? this.state.memos.find(x => x.id === id) : { title: '', content: '', tags: [], attachments: [], isCode: false, extension: '.js', folderId: 'none' };
-                this.currentEditingId = id;
-                this.attachments = [...(m.attachments || [])];
-                this.isCodeMode = m.isCode || false;
-                
-                document.getElementById('edit-title').value = m.title;
-                document.getElementById('edit-content').value = m.content;
-                document.getElementById('edit-tags').value = (m.tags || []).join(', ');
-                document.getElementById('edit-extension').value = m.extension || '.js';
-                document.getElementById('edit-folder-select').value = m.folderId || 'none';
-                
-                this.toggleCodeMode(this.isCodeMode);
-                this.renderAttachments();
-                this.toggleModal('modal-editor', true);
-            }
-
-            saveMemo() {
-                const title = document.getElementById('edit-title').value;
-                const content = document.getElementById('edit-content').value;
-                const tags = document.getElementById('edit-tags').value.split(',').map(x => x.trim()).filter(Boolean);
-                const extension = document.getElementById('edit-extension').value;
-                const folderId = document.getElementById('edit-folder-select').value;
-                const updatedAt = Date.now();
-                
-                const memoData = {
-                    title, content, tags, extension, folderId,
-                    attachments: this.attachments,
-                    isCode: this.isCodeMode,
-                    updatedAt
-                };
-
-                if (this.currentEditingId) {
-                    this.state.memos = this.state.memos.map(x => x.id === this.currentEditingId ? { ...x, ...memoData } : x);
-                } else {
-                    this.state.memos.unshift({ id: Date.now().toString(), ...memoData });
-                }
-                this.save();
-                this.renderMemos();
-                this.toggleModal('modal-editor', false);
-            }
-
-            requestDelete(id) {
-                this.pendingDeleteId = id;
-                this.toggleModal('modal-confirm', true);
-            }
-
-            confirmDelete() {
-                if (this.pendingDeleteId) {
-                    this.state.memos = this.state.memos.filter(x => x.id !== this.pendingDeleteId);
-                    this.save();
-                    this.renderMemos();
-                }
-                this.toggleModal('modal-confirm', false);
-            }
-
-            openGame() {
-                this.toggleModal('game-overlay', true);
-                document.getElementById('game-intro').classList.remove('hidden');
-                document.getElementById('game-result').classList.add('hidden');
-            }
-            closeGame() { this.toggleModal('game-overlay', false); if (this.game) this.game.stop(); }
-            startGame() {
-                document.getElementById('game-intro').classList.add('hidden');
-                document.getElementById('game-result').classList.add('hidden');
-                if (this.game) this.game.stop();
-                this.game = new BreakoutGame('game-canvas', this.state.memos, (score) => {
-                    const scoreEl = document.getElementById('game-score');
-                    if (scoreEl) scoreEl.textContent = score;
-                }, (finalScore, win) => this.showGameResult(finalScore, win));
-                this.game.start();
-            }
-            showGameResult(score, win) {
-                document.getElementById('game-result').classList.remove('hidden');
-                document.getElementById('game-result').classList.add('flex');
-                document.getElementById('final-score').textContent = score;
-                const titleEl = document.getElementById('result-title');
-                if (titleEl) {
-                    titleEl.textContent = win ? "VICTORY" : "GAME OVER";
-                    titleEl.style.color = win ? "#00f2ff" : "#ef4444";
-                }
-            }
-        }
-
-        class BreakoutGame {
-            constructor(canvasId, memos, onScore, onEnd) {
-                this.canvas = document.getElementById(canvasId);
-                this.ctx = this.canvas.getContext('2d');
-                this.onScore = onScore; this.onEnd = onEnd;
-                this.score = 0; this.memos = memos; this.running = false;
-                this.ball = { x: 400, y: 480, dx: 6, dy: -6, radius: 10, trail: [] };
-                this.paddle = { x: 340, y: 540, w: 120, h: 20 };
-                this.bricks = []; this.particles = []; this.bonuses = []; this.shake = 0;
-                this.powerups = { wide: false };
-                this.initBricks();
-                this.initAudio();
-                
-                this.updatePaddle = (x) => {
-                    if (!this.canvas) return;
-                    const rect = this.canvas.getBoundingClientRect();
-                    const scaleX = 800 / rect.width;
-                    const paddleX = (x - rect.left) * scaleX - this.paddle.w / 2;
-                    this.paddle.x = Math.max(0, Math.min(800 - this.paddle.w, paddleX));
-                };
-
-                this.mouseMoveHandler = (e) => this.updatePaddle(e.clientX);
-                this.touchMoveHandler = (e) => {
-                    if (e.touches.length > 0) {
-                        e.preventDefault();
-                        this.updatePaddle(e.touches[0].clientX);
-                    }
-                };
-            }
-            initAudio() { try { this.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
-            playSound(freq, type = 'sine', duration = 0.1, vol = 0.05) {
-                if (!this.audioCtx) return;
-                try {
-                    const osc = this.audioCtx.createOscillator();
-                    const gain = this.audioCtx.createGain();
-                    osc.type = type; osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime);
-                    gain.gain.setValueAtTime(vol, this.audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, this.audioCtx.currentTime + duration);
-                    osc.connect(gain); gain.connect(this.audioCtx.destination);
-                    osc.start(); osc.stop(this.audioCtx.currentTime + duration);
-                } catch(e) {}
-            }
-            initBricks() {
-                const rows = 5, cols = 8, w = 92, h = 26, pad = 8, offsetTop = 80, offsetLeft = 10;
-                for (let r = 0; r < rows; r++) {
-                    for (let c = 0; c < cols; c++) {
-                        const m = this.memos[(r * cols + c) % (this.memos.length || 1)] || { title: 'Note' };
-                        this.bricks.push({ x: c * (w + pad) + offsetLeft, y: r * (h + pad) + offsetTop, w, h, status: 1, hue: (r * 45 + c * 20) % 360, title: (m.title || 'Note').substring(0, 10) });
-                    }
-                }
-            }
-            createParticles(x, y, color) {
-                for (let i = 0; i < 20; i++) this.particles.push({ x, y, vx: (Math.random() - 0.5) * 12, vy: (Math.random() - 0.5) * 12, size: Math.random() * 4 + 1, life: 1.0, decay: Math.random() * 0.03 + 0.01, color });
-            }
-            start() { 
-                this.running = true; 
-                window.addEventListener('mousemove', this.mouseMoveHandler);
-                window.addEventListener('touchmove', this.touchMoveHandler, { passive: false });
-                this.loop(); 
-            }
-            stop() { 
-                this.running = false; 
-                window.removeEventListener('mousemove', this.mouseMoveHandler);
-                window.removeEventListener('touchmove', this.touchMoveHandler);
-            }
-            draw() {
-                this.ctx.save();
-                if (this.shake > 0) { this.ctx.translate((Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake); this.shake *= 0.88; }
-                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; this.ctx.fillRect(0, 0, 800, 600);
-                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-                this.ctx.fillRect(0, this.paddle.y, 800, this.paddle.h);
-                this.ball.trail.forEach((t, i) => { this.ctx.beginPath(); this.ctx.arc(t.x, t.y, this.ball.radius * (i / 15), 0, Math.PI * 2); this.ctx.fillStyle = `rgba(0, 242, 255, ${i / 40})`; this.ctx.fill(); this.ctx.closePath(); });
-                this.particles.forEach((p, i) => { this.ctx.globalAlpha = p.life; this.ctx.fillStyle = p.color; this.ctx.fillRect(p.x, p.y, p.size, p.size); this.ctx.globalAlpha = 1.0; });
-                this.bonuses.forEach(b => { this.ctx.beginPath(); this.ctx.arc(b.x, b.y, 12, 0, Math.PI * 2); this.ctx.fillStyle = b.color; this.ctx.shadowBlur = 15; this.ctx.shadowColor = b.color; this.ctx.fill(); this.ctx.closePath(); this.ctx.shadowBlur = 0; this.ctx.fillStyle = '#000'; this.ctx.font = 'bold 10px sans-serif'; this.ctx.textAlign = 'center'; this.ctx.fillText(b.type === 'WIDE' ? 'W' : '$', b.x, b.y + 4); });
-                this.ctx.fillStyle = '#00f2ff'; this.ctx.shadowBlur = 20; this.ctx.shadowColor = '#00f2ff'; this.ctx.fillRect(this.paddle.x, this.paddle.y, this.paddle.w, this.paddle.h);
-                this.ctx.shadowBlur = 0; this.ctx.beginPath(); this.ctx.arc(this.ball.x, this.ball.y, this.ball.radius, 0, Math.PI * 2); this.ctx.fillStyle = '#fff'; this.ctx.shadowBlur = 20; this.ctx.shadowColor = '#fff'; this.ctx.fill(); this.ctx.closePath();
-                this.bricks.forEach(b => { if (!b.status) return; this.ctx.fillStyle = `hsl(${b.hue}, 80%, 45%)`; this.ctx.shadowBlur = 12; this.ctx.shadowColor = `hsl(${b.hue}, 80%, 50%)`; this.ctx.fillRect(b.x, b.y, b.w, b.h); this.ctx.shadowBlur = 0; this.ctx.fillStyle = '#fff'; this.ctx.font = 'bold 11px monospace'; this.ctx.textAlign = 'center'; this.ctx.fillText(b.title, b.x + b.w/2, b.y + b.h/2 + 5); });
-                this.ctx.restore();
-            }
-            update() {
-                const b = this.ball; b.trail.push({ x: b.x, y: b.y }); if (b.trail.length > 15) b.trail.shift();
-                b.x += b.dx; b.y += b.dy;
-                if (b.x + b.radius > 800 || b.x - b.radius < 0) { b.dx = -b.dx; this.playSound(440); this.shake = 3; }
-                if (b.y - b.radius < 0) { b.dy = -b.dy; this.playSound(440); this.shake = 3; }
-                if (b.y + b.radius > this.paddle.y && b.y - b.radius < this.paddle.y + this.paddle.h && b.x > this.paddle.x && b.x < this.paddle.x + this.paddle.w) { b.dy = -Math.abs(b.dy); b.dx = ((b.x - (this.paddle.x + this.paddle.w / 2)) / (this.paddle.w / 2)) * 8; this.playSound(554, 'triangle'); this.shake = 6; }
-                let bricksAlive = 0;
-                this.bricks.forEach(brick => {
-                    if (brick.status) {
-                        bricksAlive++;
-                        if (b.x + b.radius > brick.x && b.x - b.radius < brick.x + brick.w && b.y + b.radius > brick.y && b.y - b.radius < brick.y + brick.h) {
-                            brick.status = 0; this.score += 500; this.onScore(this.score); this.createParticles(brick.x + brick.w/2, brick.y + brick.h/2, `hsl(${brick.hue}, 80%, 50%)`); this.playSound(880 + Math.random() * 400); this.shake = 12; b.dy = -b.dy;
-                            if (Math.random() < 0.2) this.bonuses.push({ x: brick.x + brick.w/2, y: brick.y + brick.h/2, type: Math.random() > 0.5 ? 'WIDE' : 'SCORE', color: '#facc15' });
-                        }
-                    }
-                });
-                if (bricksAlive === 0) { this.running = false; this.onEnd(this.score, true); }
-                this.particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.life -= p.decay; if (p.life <= 0) this.particles.splice(i, 1); });
-                this.bonuses.forEach((bonus, i) => {
-                    bonus.y += 3;
-                    if (bonus.y > this.paddle.y && bonus.y < this.paddle.y + this.paddle.h && bonus.x > this.paddle.x && bonus.x < this.paddle.x + this.paddle.w) {
-                        this.score += 2000; this.onScore(this.score); if (bonus.type === 'WIDE' && !this.powerups.wide) { this.paddle.w += 60; this.powerups.wide = true; setTimeout(() => { this.paddle.w -= 60; this.powerups.wide = false; }, 8000); }
-                        this.bonuses.splice(i, 1);
-                    } else if (bonus.y > 600) this.bonuses.splice(i, 1);
-                });
-                if (b.y > 600) { this.running = false; this.onEnd(this.score, false); }
-            }
-            loop() { if (!this.running) return; this.update(); this.draw(); requestAnimationFrame(() => this.loop()); }
-        }
-
-        // Initialize App
-        document.addEventListener('DOMContentLoaded', () => {
-            new MemoApp();
-        });
-    </script>
 </body>
 </html>
