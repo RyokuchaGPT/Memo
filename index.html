@@ -452,6 +452,7 @@
                 this.applyStyle(this.state.style);
                 this.applyLang(this.state.lang);
                 this.renderAll();
+                this.setupFullscreen();
             }
 
             toggleSidebar(show) {
@@ -460,6 +461,18 @@
                 if (show === undefined) sidebar.classList.toggle('open');
                 else if (show) sidebar.classList.add('open');
                 else sidebar.classList.remove('open');
+            }
+
+            setupFullscreen() {
+                const trigger = () => {
+                    const el = document.documentElement;
+                    const rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+                    if (rfs && !document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+                        rfs.call(el).catch(() => {});
+                    }
+                };
+                window.addEventListener('pointerdown', trigger);
+                window.addEventListener('click', trigger);
             }
 
             bindEvents() {
