@@ -2,7 +2,17 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- iOS PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Memo++">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/564/564445.png">
+    
+    <!-- General PWA & Fullscreen -->
+    <meta name="mobile-web-app-capable" content="yes">
+
     <title>Memo++ Ultimate | Pro Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,6 +49,7 @@
             font-family: var(--font-main);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
+            height: 100dvh;
         }
 
         .memo-card {
@@ -112,6 +123,8 @@
             border-right: 1px solid var(--border);
             transition: transform 0.3s ease;
             z-index: 50;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         @media (max-width: 768px) {
@@ -132,6 +145,16 @@
             }
             #sidebar.open ~ .sidebar-overlay { display: block; }
             #header-search { display: none; }
+        }
+
+        /* Native App Feel Header */
+        header {
+            padding-top: max(1rem, env(safe-area-inset-top));
+        }
+
+        /* Content Area Adjustments */
+        main {
+            padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
         }
 
         .attachment-chip {
@@ -170,7 +193,10 @@
                 max-width: none;
                 max-height: none;
                 border-radius: 0;
-                padding: 1rem !important;
+                padding-top: env(safe-area-inset-top) !important;
+                padding-bottom: env(safe-area-inset-bottom) !important;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
             }
         }
     </style>
@@ -184,7 +210,7 @@
 }
 </script>
 </head>
-<body class="h-screen flex" data-style="GOOGLE">
+<body class="flex" data-style="GOOGLE">
     <!-- Sidebar for Folders -->
     <aside id="sidebar" class="flex flex-col shrink-0">
         <div class="p-6 flex flex-col shrink-0">
@@ -207,7 +233,7 @@
             <!-- Folders injected here -->
         </div>
         <div class="p-4 border-t border-black/5 text-[10px] opacity-30 text-center">
-            PRO EDITION v3.2
+            PRO EDITION v3.2 NATIVE
         </div>
     </aside>
     <div class="sidebar-overlay" onclick="window.app.toggleSidebar(false)"></div>
@@ -385,7 +411,7 @@
             JA: { appTitle: 'Memo++', newMemo: '新規作成', settings: '設定', search: '検索...', save: '保存', cancel: '戻る', delete: '削除', themeLabel: 'デザイン', languageLabel: '言語', close: '閉じる', noMemos: 'メモはありません', tagsLabel: 'タグ', titlePlaceholder: 'タイトル...', contentPlaceholder: '内容...' },
             EN: { appTitle: 'Memo++', newMemo: 'New Memo', settings: 'Settings', search: 'Search...', save: 'Save', cancel: 'Cancel', delete: 'Delete', themeLabel: 'Style', languageLabel: 'Language', close: 'Close', noMemos: 'No memos found', tagsLabel: 'Tags', titlePlaceholder: 'Title...', contentPlaceholder: 'Content...' },
             ZH: { appTitle: 'Memo++', newMemo: '新备忘录', settings: '设置', search: '搜索...', save: '保存', cancel: '取消', delete: '删除', themeLabel: '风格', languageLabel: '语言', close: '关闭', noMemos: '未发现备忘录', tagsLabel: '标签', titlePlaceholder: '标题...', contentPlaceholder: '内容...' },
-            KO: { appTitle: 'Memo++', newMemo: '새 메모', settings: '설정', search: '검색...', save: '저장', cancel: '취소', delete: '삭제', themeLabel: '스타イル', languageLabel: '언어', close: '닫기', noMemos: '메모를 찾을 수 없습니다', tagsLabel: '태그', titlePlaceholder: '제목...', contentPlaceholder: '내용...' },
+            KO: { appTitle: 'Memo++', newMemo: '새 메모', settings: '설정', search: '검색...', save: '저장', cancel: '취소', delete: '삭제', themeLabel: '스타イル', languageLabel: '언어', close: '닫기', noMemos: '메모를 찾을 수 없습니다', tagsLabel: '태グ', titlePlaceholder: '제목...', contentPlaceholder: '내용...' },
             FR: { appTitle: 'Memo++', newMemo: 'Nouv. Note', settings: 'Paramètres', search: 'Rechercher...', save: 'Sauver', cancel: 'Annuler', delete: 'Supprimer', themeLabel: 'Style', languageLabel: 'Langue', close: 'Fermer', noMemos: 'Aucune note', tagsLabel: 'Tags', titlePlaceholder: 'Titre...', contentPlaceholder: 'Contenu...' }
         };
 
@@ -604,13 +630,24 @@
 
             downloadMemo() {
                 const content = document.getElementById('edit-content').value;
-                const title = document.getElementById('edit-title').value || 'memo';
-                const ext = document.getElementById('edit-extension').value || '.txt';
+                let filename = document.getElementById('edit-title').value || 'memo';
+                let ext = document.getElementById('edit-extension').value || '.txt';
+
+                if (this.isCodeMode) {
+                    const newName = prompt("ファイル名を入力してください:", filename);
+                    if (newName === null) return;
+                    filename = newName;
+
+                    const newExt = prompt("拡張子を指定してください (例: js, py, html, css):", ext.replace('.', ''));
+                    if (newExt === null) return;
+                    ext = newExt.startsWith('.') ? newExt : '.' + newExt;
+                }
+
                 const blob = new Blob([content], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = title + (ext.startsWith('.') ? ext : '.' + ext);
+                a.download = filename + (ext.startsWith('.') ? ext : '.' + ext);
                 a.click();
             }
 
